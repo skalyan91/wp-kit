@@ -23,7 +23,7 @@ if [ ! -d "$prefix" ]; then
   fi
 fi
 
-if [ \( -n $(docker ps -a | grep "^${name}_wordpress") \) -a
+if [ \( -n $(docker ps -a | grep "^${name}_wordpress") \) -a \
      \( -n $(docker ps -a | grep "^${name}_db") \) ]; then
   printf "$rederror There are already Docker containers running for the $name site.\n"
   exit 1
