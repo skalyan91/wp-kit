@@ -23,6 +23,12 @@ if [ ! -d "$prefix" ]; then
   fi
 fi
 
+if [ -n $(docker ps -a | grep "^${name}_wordpress") ] &&
+   [ -n $(docker ps -a | grep "^${name}_db") ]; then
+  printf "$rederror There are already Docker containers running for the $name site.\n"
+  exit 1
+fi
+
 while [ -z "$db" ]; do
   read -p  " Database name: " db
 done
@@ -45,7 +51,6 @@ while [ -z "$rootpassword" ]; do
     echo "Passwords do not match. Please try again."
   fi
 done
-
 
 echo "Uninstalling old versions of Docker..."
 apt-get remove docker docker.io containerd runc
@@ -106,4 +111,11 @@ echo "Starting up Docker containers..."
   rm docker-compose.yml
 )
 
-echo "Your Docker containers are now up and running! Go to http://$(curl ifconfig.me):8000 to start setting up WordPress."
+read -p "Would you like to use the local IP address? (y/N) " local_ip
+if [ "${local_ip,,}" == "y" ]; then
+  ip=$(hostname -I | awk '{print $1}')
+else
+  ip=$(curl ifconfig.me)
+fi
+
+echo "Your Docker containers are now up and running! Go to http://$ip:8000 to start setting up WordPress."
