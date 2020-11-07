@@ -8,6 +8,45 @@ if [ $EUID -ne 0 ]; then
    exit 1
 fi
 
+echo "Uninstalling old versions of Docker..."
+apt-get remove docker docker.io containerd runc
+
+echo "Installing any necessary dependencies..."
+apt-get update > /dev/null
+apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common \
+    pwgen
+if [ -z "$(cat /etc/apt/sources.list | grep "download\.docker\.com" || true)" ]; then
+  echo "Setting up official Docker repository..."
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+  if [ -z "$(apt-key fingerprint 0EBFCD88 | grep "0EBF CD88$" || true)" ]; then
+    echo "$rederror Fingerprint does not match!"
+    exit 1
+  fi
+  add-apt-repository \
+     "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu \
+     $(lsb_release -cs) \
+     stable"
+fi
+
+echo "Installing Docker (if necessary)..."
+apt-get update > /dev/null
+apt-get install docker-ce docker-ce-cli containerd.io
+
+echo "Installing docker-compose..."
+# get latest docker compose released tag
+compose_latest_ver=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)
+compose_curr_ver=$(docker-compose --version | cut -d" " -f3 | sed s/,//g || true)
+if [ compose_latest_ver != compose_curr_ver ]; then
+  curl -L "https://github.com/docker/compose/releases/download/${compose_latest_ver}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  chmod +x /usr/local/bin/docker-compose
+  docker-compose --version
+fi
+
 while [ -z "$name" ]; do
   read -p  "     Site name: " name
 done
@@ -19,7 +58,7 @@ if [ ! -d "$prefix" ]; then
     echo "Please create $prefix and then run this script again."
     exit 1
   else
-    mkdir -p "$prefix/db_data"
+    mkdir -p "$prefix"
   fi
 fi
 
@@ -54,42 +93,17 @@ while [ -z "$rootpassword" ]; do
   fi
 done
 
-echo "Uninstalling old versions of Docker..."
-apt-get remove docker docker.io containerd runc
-
-echo "Installing any necessary dependencies..."
-apt-get update > /dev/null
-apt-get install \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg-agent \
-    software-properties-common \
-    pwgen
-if [ -z "$(cat /etc/apt/sources.list | grep "download\.docker\.com" || true)" ]; then
-  echo "Setting up official Docker repository..."
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-  if [ -z "$(apt-key fingerprint 0EBFCD88 | grep "0EBF CD88$" || true)" ]; then
-    echo "$rederror Fingerprint does not match!"
-    exit 1
-  fi
-  add-apt-repository \
-     "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-     $(lsb_release -cs) \
-     stable"
+ports=$(netstat -lat --numeric-ports | awk '{print $4}' | cut -d":" -f2 | grep "^8[0-9]{3}" || true)
+if [ -z $ports ]; then
+  port_no="8000"
+else
+  let port_no="$(printf $ports | sort -nr | head -1) + 10"
 fi
-
-echo "Installing Docker (if necessary)..."
-apt-get update > /dev/null
-apt-get install docker-ce docker-ce-cli containerd.io
-
-echo "Installing docker-compose..."
-curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
-docker-compose --version
 
 echo "Generating docker-compose file..."
 cat docker-compose-template.yml |
+  sed "s/8000/$port_no/g" |
+  sed "s/db_data/$db/g" |
   sed "s/db_name/$db/g" |
   sed "s/mysql_username/$username/g" |
   sed "s/mysql_password/$password/g" |
@@ -120,4 +134,4 @@ else
   ip=$(curl ifconfig.me)
 fi
 
-echo "Your Docker containers are now up and running! Go to http://$ip:8000 to start setting up WordPress."
+echo "Your Docker containers are now up and running! Go to http://$ip:$port_no to start setting up WordPress."
