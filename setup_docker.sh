@@ -23,9 +23,10 @@ if [ ! -d "$prefix" ]; then
   fi
 fi
 
-containers_running=$([ \( -n $(docker ps -a | grep "^${name}_wordpress") \) -a \( -n $(docker ps -a | grep "^${name}_db") \) ])
+wp_container_exists=$(sudo docker ps -a | grep "\b${name}_wordpress" || true)
+db_container_exists=$(sudo docker ps -a | grep "\b${name}_db" || true)
 
-if $containers_running; then
+if [[ ( -n $wp_container_exists ) && ( -n $db_container_exists ) ]]; then
   printf "$rederror There are already Docker containers running for the $name site.\n"
   exit 1
 fi
@@ -65,10 +66,10 @@ apt-get install \
     gnupg-agent \
     software-properties-common \
     pwgen
-if [ -z "$(cat /etc/apt/sources.list | grep "download\.docker\.com")" ]; then
+if [ -z "$(cat /etc/apt/sources.list | grep "download\.docker\.com" || true)" ]; then
   echo "Setting up official Docker repository..."
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-  if [ -z "$(apt-key fingerprint 0EBFCD88 | grep "0EBF CD88$")" ]; then
+  if [ -z "$(apt-key fingerprint 0EBFCD88 | grep "0EBF CD88$" || true)" ]; then
     echo "$rederror Fingerprint does not match!"
     exit 1
   fi
