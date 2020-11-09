@@ -12,5 +12,5 @@ fi
 
 mkdir -p /var/www/backups/
 cd /var/www/backups/
-mysqldump --databases db_name > $(date '+%Y-%m-%d')_db_name.sql
-zip -r $(date '+%Y-%m-%d')_site_name ../site_name > $(date '+%Y-%m-%d')_site_name_backup.log
+mysqldump --databases db_name > $(date '+%Y-%m-%d_%H:%M:%S')_db_name.sql
+zip -r $(date '+%Y-%m-%d_%H:%M:%S')_site_name ../site_name > $(date '+%Y-%m-%d_%H:%M:%S')_site_name_backup.log
