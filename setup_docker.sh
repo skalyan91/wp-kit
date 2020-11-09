@@ -77,8 +77,8 @@ while [ -z "$username" ]; do
   read -p  "MySQL username: " username
 done
 while [ -z "$password" ]; do
-  read -sp "MySQL password: " password; echo ""
-  read -sp "Re-enter MySQL password: " rpassword; echo ""
+  read -sp "MySQL database password: " password; echo ""
+  read -sp "Re-enter MySQL database password: " rpassword; echo ""
   if [[ $password != $rpassword ]]; then
     password=""
     echo "Passwords do not match. Please try again."
@@ -93,7 +93,7 @@ while [ -z "$rootpassword" ]; do
   fi
 done
 
-ports=$(netstat -lat --numeric-ports | awk '{print $4}' | cut -d":" -f2 | grep "^8[0-9]{3}" || true)
+ports=$(netstat -lat --numeric-ports | awk '{print $4}' | awk -F: '{print $NF}' | grep -o "\b8[0-9][0-9][0-9]" || true)
 if [ -z $ports ]; then
   port_no="8000"
 else
