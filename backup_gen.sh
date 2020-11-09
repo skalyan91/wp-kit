@@ -21,7 +21,7 @@ done
 while [ -z "$db" ]; do
     read -p  "Database name: " db
     if [ -n "$db" ]; then
-        if [ -z $(mysql -e "show databases like '$db'") ]; then
+        if [ -z "$(mysql -e "show databases like '$db'")" ]; then
             printf "$rederror The database '$db' does not exist! Please try again.\n"
             db=""
         fi
@@ -42,5 +42,6 @@ fi
 cat backup_template.sh |
     sed "s/site_name/$name/g" |
     sed "s/db_name/$db/g" > "/var/www/scripts/backup_$name.sh"
+chmod +x "/var/www/scripts/backup_$name.sh"
 
 echo "The backup script has been created at /var/www/scripts/backup_$name.sh"

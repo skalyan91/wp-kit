@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Backs up the db_name database and the site_name site into /var/www/backups/
+
 rederror="\033[1;31mERROR:\033[0m"
 
 if [ $EUID -ne 0 ]; then
@@ -11,4 +13,4 @@ fi
 mkdir -p /var/www/backups/
 cd /var/www/backups/
 mysqldump --databases db_name > $(date '+%Y-%m-%d')_db_name.sql
-zip -r $(date '+%Y-%m-%d')_site_name ../site_name
+zip -r $(date '+%Y-%m-%d')_site_name ../site_name > $(date '+%Y-%m-%d')_site_name_backup.log
