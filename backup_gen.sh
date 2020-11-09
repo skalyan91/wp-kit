@@ -47,8 +47,8 @@ chmod +x "/var/www/scripts/backup_$name.sh"
 echo "The backup script has been created at /var/www/scripts/backup_$name.sh"
 
 cat restore_template.sh |
-    sed "s/folder_backup/$(date '+%Y-%m-%d_%H:%M:%S')_$name/g" |
-    sed "s/mysql_backup/$(date '+%Y-%m-%d_%H:%M:%S')_$db/g" |
+    sed "s/folder_backup/$(date '+%Y-%m-%d_%H-%M-%S')_$name/g" |
+    sed "s/mysql_backup/$(date '+%Y-%m-%d_%H-%M-%S')_$db/g" |
     sed "s/site_name/$name/g" |
     sed "s/db_name/$db/g" > "/var/www/scripts/restore_$name.sh"
 chmod +x "/var/www/scripts/restore_$name.sh"
