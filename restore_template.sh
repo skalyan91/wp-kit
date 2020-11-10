@@ -27,3 +27,5 @@ sql_command="grant all privileges on rdb.* to $db_user@localhost identified by '
 flush privileges;"
 
 mysql -e "$sql_command"
+
+echo "Congratulations! The rsite site and rdb database have been restored successfully."
