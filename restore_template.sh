@@ -20,10 +20,10 @@ unzip -: folder_backup.zip
 echo "Restoring MySQL database..."
 mysql < mysql_backup.sql
 
-db_user=$(cat "../site_name/wp-config.php" | grep DB_USER | cut -d\' -f4)
-db_password=$(cat "../site_name/wp-config.php" | grep DB_PASSWORD | cut -d\' -f4)
+db_user=$(cat "../rsite/wp-config.php" | grep DB_USER | cut -d\' -f4)
+db_password=$(cat "../rsite/wp-config.php" | grep DB_PASSWORD | cut -d\' -f4)
 
-sql_command="grant all privileges on db_name.* to $db_user@localhost identified by '$db_password';
+sql_command="grant all privileges on rdb.* to $db_user@localhost identified by '$db_password';
 flush privileges;"
 
 mysql -e "$sql_command"
