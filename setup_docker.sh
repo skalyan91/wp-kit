@@ -97,7 +97,7 @@ ports=$(netstat -lat --numeric-ports | awk '{print $4}' | awk -F: '{print $NF}' 
 if [ -z $ports ]; then
   port_no="8000"
 else
-  let port_no="$(printf $ports | sort -nr | head -1) + 10"
+  let port_no="$(printf "$ports" | sort -nr | head -1) + 10"
 fi
 
 echo "Generating docker-compose file..."
